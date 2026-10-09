@@ -1,11 +1,11 @@
-<!DOCTYPE html>
+here<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>معرض الفيديوهات الذكي</title>
     
-    <!-- إعدادات التثبيت كفطبيق هاتف (PWA & iOS) -->
+    <!-- إعدادات التثبيت كتطبيق هاتف (PWA & iOS) -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="المعرض الذكي">
@@ -40,7 +40,7 @@
         }
         #login-box h2 { margin-bottom: 8px; color: #fff; font-size: 20px; font-weight: 600; }
         #login-box p { color: #8e8e93; font-size: 13px; margin-bottom: 24px; }
-        input[type="text"] { 
+        input[type="text"], input[type="password"] { 
             width: 100%; 
             padding: 14px; 
             margin-bottom: 16px; 
@@ -54,7 +54,7 @@
             text-align: center; 
             letter-spacing: 1px; 
         }
-        input[type="text"]:focus { border-color: #0a84ff; background: #1c1c1e; }
+        input[type="text"]:focus, input[type="password"]:focus { border-color: #0a84ff; background: #1c1c1e; }
         button { 
             padding: 14px; 
             background: #0a84ff; 
@@ -100,7 +100,7 @@
         /* شبكة المعرض (Gallery Grid) بستايل أستوديو الصور الحديث */
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding-bottom: 20px; }
         
-        /* بطاقة الفيديو بتصميم إي أو إس الاحترافي */
+        /* بطاقة الفيديو */
         .card { 
             background: #1c1c1e; 
             border-radius: 10px; 
@@ -213,7 +213,10 @@
     </div>
 
     <script>
-        // حقن إعدادات التثبيت (PWA Manifest) تلقائياً لتجنب إنشاء ملفات إضافية
+        // كلمة سر الـ VIP المحدثة
+        const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
+
+        // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
         const manifestData = {
             "name": "المعرض الذكي للفيديوهات",
             "short_name": "المعرض",
@@ -391,13 +394,31 @@
                         let card = document.createElement('div');
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${item.name}</div>`;
-                        card.onclick = () => loadFolderContent(item.path);
+                        card.onclick = () => {
+                            if (item.name === "2" || item.name.toLowerCase().includes("vip")) {
+                                let pass = prompt("🔒 هذا المجلد مخصص لمشتركي VIP فقط. أدخل كلمة السر:");
+                                if (pass !== VIP_SECRET_PASSWORD) {
+                                    alert("❌ كلمة السر غير صحيحة!");
+                                    return;
+                                }
+                            }
+                            loadFolderContent(item.path);
+                        };
                         grid.appendChild(card);
                     } else if (ext === "zip") {
                         let card = document.createElement('div');
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📦</div><div class="folder-title">${item.name}</div>`;
-                        card.onclick = () => openZipFile(item.name, item.download_url);
+                        card.onclick = () => {
+                            if (item.name.includes("2") || item.name.toLowerCase().includes("vip")) {
+                                let pass = prompt("🔒 هذا الملف مضغوط ومخصص لمشتركي VIP فقط. أدخل كلمة السر:");
+                                if (pass !== VIP_SECRET_PASSWORD) {
+                                    alert("❌ كلمة السر غير صحيحة!");
+                                    return;
+                                }
+                            }
+                            openZipFile(item.name, item.download_url);
+                        };
                         grid.appendChild(card);
                     }
                 });
@@ -458,7 +479,16 @@
                 let card = document.createElement('div');
                 card.className = "folder-card";
                 card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${folderName}</div>`;
-                card.onclick = () => renderZipFolder(internalPath + folderName + "/");
+                card.onclick = () => {
+                    if (folderName === "2" || folderName.toLowerCase().includes("vip")) {
+                        let pass = prompt("🔒 هذا المجلد الفرعي مخصص لـ VIP فقط. أدخل كلمة السر:");
+                        if (pass !== VIP_SECRET_PASSWORD) {
+                            alert("❌ كلمة السر غير صحيحة!");
+                            return;
+                        }
+                    }
+                    renderZipFolder(internalPath + folderName + "/");
+                };
                 grid.appendChild(card);
             });
 
