@@ -227,7 +227,7 @@
         // كلمة سر الـ VIP (تُطلب فقط للملفات أو المجلدات التي يحتوي اسمها على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
-        // الملف الكبير بالاسم الجديد (بدون VIP ليفتح للجميع مباشرة)
+        // الملف الكبير بالاسم المطلوب والرابط المباشر الصحيح
         const LARGE_ZIP_NAME = "Sudanese_se6x.zip"; 
         const LARGE_ZIP_URL = "https://github.com/sudanese-se6x/se6x/releases/download/v1.0/SUDANESE_SEX.zip";
 
@@ -393,7 +393,6 @@
 
                 grid.innerHTML = "";
 
-                // إظهار الملف الكبير في الصفحة الرئيسية مباشرة بدون كلمة سر لأنه لا يحتوي على VIP
                 if (path === "" && LARGE_ZIP_URL && LARGE_ZIP_URL.trim() !== "") {
                     let largeCard = document.createElement('div');
                     largeCard.className = "folder-card";
@@ -464,7 +463,8 @@
 
             try {
                 let blob;
-                const cacheName = 'zip-offline-cache-v7';
+                // تم تغيير إصدار الذاكرة المؤقتة إلى v8 لتجاوز أي بيانات تالفة قديمة
+                const cacheName = 'zip-offline-cache-v8';
                 const cache = await caches.open(cacheName);
                 let cachedResponse = await cache.match(downloadUrl);
 
@@ -483,7 +483,7 @@
                 currentZipName = name;
                 renderZipFolder("");
             } catch (err) {
-                grid.innerHTML = "<p style='color:#ff453a; grid-column: 1/-1; text-align:center; padding: 40px;'>فشل في قراءة الملف المضغوط.</p>";
+                grid.innerHTML = "<p style='color:#ff453a; grid-column: 1/-1; text-align:center; padding: 40px;'>فشل في قراءة الملف المضغوط. تأكد من اتصال الإنترنت أو صحة الرابط.</p>";
             }
         }
 
