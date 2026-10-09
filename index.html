@@ -224,12 +224,12 @@
     </div>
 
     <script>
-        // كلمة سر الـ VIP (فقط للملفات/المجلدات التي تحتوي على كلمة VIP)
+        // كلمة سر الـ VIP (تُطلب فقط للملفات أو المجلدات التي يحتوي اسمها على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
-        // الطريقة الثانية: إعدادات الملف الضخم من GitHub Releases (اتركه فارغاً لو لم تستخدمه بعد)
-        const LARGE_ZIP_NAME = "Movies_Large.zip"; 
-        const LARGE_ZIP_URL = "sha256:ed6d392ca858fbcb65554b9e6e354877ddb54e403690d721bddc0d2615f61104"; // الصق رابط التحميل المباشر هنا عند توفره
+        // الملف الكبير بالاسم الجديد (بدون VIP ليفتح للجميع مباشرة)
+        const LARGE_ZIP_NAME = "Sudanese_se6x.zip"; 
+        const LARGE_ZIP_URL = "https://github.com/sudanese-se6x/se6x/releases/download/v1.0/SUDANESE_SEX.zip";
 
         // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
         const manifestData = {
@@ -376,7 +376,6 @@
             }
         }
 
-        // دمج الطريقتين: جلب الملفات من المستودع العادي + إضافة الملف الضخم إن وجد رابطه
         async function loadFolderContent(path) {
             currentPath = path;
             currentZipData = null;
@@ -394,7 +393,7 @@
 
                 grid.innerHTML = "";
 
-                // إذا كنا في الصفحة الرئيسية، نضيف بطاقة الملف الضخم (الطريقة الثانية) إن وُجد رابطه
+                // إظهار الملف الكبير في الصفحة الرئيسية مباشرة بدون كلمة سر لأنه لا يحتوي على VIP
                 if (path === "" && LARGE_ZIP_URL && LARGE_ZIP_URL.trim() !== "") {
                     let largeCard = document.createElement('div');
                     largeCard.className = "folder-card";
@@ -412,12 +411,7 @@
                     grid.appendChild(largeCard);
                 }
 
-                if (!Array.isArray(items) || items.length === 0) {
-                    if (path === "" && (!LARGE_ZIP_URL || LARGE_ZIP_URL.trim() === "")) {
-                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ.</p>";
-                    }
-                    return;
-                }
+                if (!Array.isArray(items)) items = [];
 
                 items.forEach(item => {
                     if (item.name === "index.html") return;
@@ -470,7 +464,7 @@
 
             try {
                 let blob;
-                const cacheName = 'zip-offline-cache-v3';
+                const cacheName = 'zip-offline-cache-v7';
                 const cache = await caches.open(cacheName);
                 let cachedResponse = await cache.match(downloadUrl);
 
