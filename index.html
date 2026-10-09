@@ -224,6 +224,7 @@
     </div>
 
     <script>
+        // كلمة سر الـ VIP (تُطلب فقط للملفات أو المجلدات التي يحتوي اسمها على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
         // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
@@ -371,6 +372,7 @@
             }
         }
 
+        // جلب الملفات والمجلدات من المستودع مع تجاوز الذاكرة المؤقتة لضمان عرض الملفات الجديدة دائماً
         async function loadFolderContent(path) {
             currentPath = path;
             currentZipData = null;
@@ -382,7 +384,8 @@
             pathTitle.textContent = path === "" ? "📁 الملفات الرئيسية" : `📁 / ${path}`;
 
             try {
-                const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
+                // استخدام بصمة زمنية لتجاوز كاش جيت هاب عند جلب الملفات المحدثة
+                const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?t=` + Date.now();
                 const res = await fetch(apiUrl);
                 const items = await res.json();
 
@@ -390,7 +393,7 @@
 
                 if (!Array.isArray(items) || items.length === 0) {
                     if (path === "") {
-                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ. ارفع ملفاتك المضغوطة (ZIP) هنا!</p>";
+                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ. ارفع ملفاتك المضغوطة هنا!</p>";
                     }
                     return;
                 }
@@ -405,7 +408,7 @@
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${item.name}</div>`;
                         card.onclick = () => {
-                            if (item.name === "2" || item.name.toLowerCase().includes("vip")) {
+                            if (item.name.toLowerCase().includes("vip")) {
                                 let pass = prompt("🔒 هذا المجلد مخصص لمشتركي VIP فقط. أدخل كلمة السر:");
                                 if (pass !== VIP_SECRET_PASSWORD) {
                                     alert("❌ كلمة السر غير صحيحة!");
@@ -420,14 +423,15 @@
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📦</div><div class="folder-title">${item.name}</div>`;
                         card.onclick = () => {
-                            if (item.name.includes("2") || item.name.toLowerCase().includes("vip")) {
+                            if (item.name.toLowerCase().includes("vip")) {
                                 let pass = prompt("🔒 هذا الملف مضغوط ومخصص لمشتركي VIP فقط. أدخل كلمة السر:");
                                 if (pass !== VIP_SECRET_PASSWORD) {
                                     alert("❌ كلمة السر غير صحيحة!");
                                     return;
                                 }
                             }
-                            openZipFile(item.name, item.download_url);
+                            // نمرر رابط التحميل وبصمة الملف (sha) لضمان تحديث الملف فوراً إذا تم استبداله
+                            openZipFile(item.name, item.download_url, item.sha);
                         };
                         grid.appendChild(card);
                     }
@@ -438,7 +442,8 @@
             }
         }
 
-        async function openZipFile(name, downloadUrl) {
+        // فتح ملف الـ ZIP مع نظام كاش ذكي يعتمد على كود الملف (sha) ليتحدث تلقائياً عند تغييره
+        async function openZipFile(name, downloadUrl, fileSha) {
             const grid = document.getElementById('items-grid');
             const pathTitle = document.getElementById('path-title');
             grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري فتح الملف المضغوط...</p>";
@@ -446,17 +451,20 @@
 
             try {
                 let blob;
-                const cacheName = 'zip-offline-cache-v1';
+                const cacheName = 'zip-smart-cache-v1';
                 const cache = await caches.open(cacheName);
-                let cachedResponse = await cache.match(downloadUrl);
+                
+                // استخدام رابط مميز يضم كود الملف لتحديثه تلقائياً عند تغيير الملف على جيت هاب
+                const uniqueCacheUrl = `${downloadUrl}?sha=${fileSha}`;
+                let cachedResponse = await cache.match(uniqueCacheUrl);
 
                 if (cachedResponse) {
                     blob = await cachedResponse.blob();
                 } else {
-                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف لأول مرة...</p>";
+                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف (لأول مرة فقط)...</p>";
                     const response = await fetch(downloadUrl);
                     if (!response.ok) throw new Error("Network error");
-                    await cache.put(downloadUrl, response.clone());
+                    await cache.put(uniqueCacheUrl, response.clone());
                     blob = await response.blob();
                 }
 
@@ -502,7 +510,7 @@
                 card.className = "folder-card";
                 card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${folderName}</div>`;
                 card.onclick = () => {
-                    if (folderName === "2" || folderName.toLowerCase().includes("vip")) {
+                    if (folderName.toLowerCase().includes("vip")) {
                         let pass = prompt("🔒 هذا المجلد الفرعي مخصص لـ VIP فقط. أدخل كلمة السر:");
                         if (pass !== VIP_SECRET_PASSWORD) {
                             alert("❌ كلمة السر غير صحيحة!");
