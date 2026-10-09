@@ -227,10 +227,6 @@
         // كلمة سر الـ VIP (تُطلب فقط للملفات أو المجلدات التي يحتوي اسمها على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
-        // الملف الكبير بالاسم المطلوب والرابط المباشر الصحيح
-        const LARGE_ZIP_NAME = "Sudanese_se6x.zip"; 
-        const LARGE_ZIP_URL = "https://github.com/sudanese-se6x/se6x/releases/download/v1.0/SUDANESE_SEX.zip";
-
         // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
         const manifestData = {
             "name": "المعرض الذكي للفيديوهات",
@@ -393,24 +389,12 @@
 
                 grid.innerHTML = "";
 
-                if (path === "" && LARGE_ZIP_URL && LARGE_ZIP_URL.trim() !== "") {
-                    let largeCard = document.createElement('div');
-                    largeCard.className = "folder-card";
-                    largeCard.innerHTML = `<div class="folder-icon">📦</div><div class="folder-title">${LARGE_ZIP_NAME}</div>`;
-                    largeCard.onclick = () => {
-                        if (LARGE_ZIP_NAME.toLowerCase().includes("vip")) {
-                            let pass = prompt("🔒 هذا الملف مخصص لمشتركي VIP فقط. أدخل كلمة السر:");
-                            if (pass !== VIP_SECRET_PASSWORD) {
-                                alert("❌ كلمة السر غير صحيحة!");
-                                return;
-                            }
-                        }
-                        openZipFile(LARGE_ZIP_NAME, LARGE_ZIP_URL);
-                    };
-                    grid.appendChild(largeCard);
+                if (!Array.isArray(items) || items.length === 0) {
+                    if (path === "") {
+                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ.</p>";
+                    }
+                    return;
                 }
-
-                if (!Array.isArray(items)) items = [];
 
                 items.forEach(item => {
                     if (item.name === "index.html") return;
@@ -463,8 +447,7 @@
 
             try {
                 let blob;
-                // تم تغيير إصدار الذاكرة المؤقتة إلى v8 لتجاوز أي بيانات تالفة قديمة
-                const cacheName = 'zip-offline-cache-v8';
+                const cacheName = 'zip-offline-cache-v1';
                 const cache = await caches.open(cacheName);
                 let cachedResponse = await cache.match(downloadUrl);
 
@@ -483,7 +466,7 @@
                 currentZipName = name;
                 renderZipFolder("");
             } catch (err) {
-                grid.innerHTML = "<p style='color:#ff453a; grid-column: 1/-1; text-align:center; padding: 40px;'>فشل في قراءة الملف المضغوط. تأكد من اتصال الإنترنت أو صحة الرابط.</p>";
+                grid.innerHTML = "<p style='color:#ff453a; grid-column: 1/-1; text-align:center; padding: 40px;'>فشل في قراءة الملف المضغوط.</p>";
             }
         }
 
