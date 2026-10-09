@@ -1,4 +1,4 @@
-here<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -23,15 +23,25 @@ here<!DOCTYPE html>
             display: flex; 
             justify-content: center; 
             align-items: center; 
+            overflow-x: hidden;
         }
-        .container { width: 100%; max-width: 600px; padding: 12px; min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-start; }
+        .container { 
+            width: 100%; 
+            max-width: 600px; 
+            padding: 12px; 
+            min-height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center;
+        }
         
-        /* شاشة تسجيل الدخول بتصميم إي أو إس العصري */
+        /* شاشة تسجيل الدخول متمركزة تماماً في المنتصف */
         #login-box { 
             background: #1c1c1e; 
-            padding: 30px 20px; 
+            padding: 35px 24px; 
             border-radius: 24px; 
-            box-shadow: 0 20px 40px rgba(0,0,0,0.6); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8); 
             text-align: center; 
             max-width: 380px; 
             width: 100%;
@@ -74,7 +84,7 @@ here<!DOCTYPE html>
         .success { color: #32d74b; font-weight: 500; }
 
         /* واجهة المعرض والمجلدات */
-        #app-content { display: none; width: 100%; flex-direction: column; flex-grow: 1; }
+        #app-content { display: none; width: 100%; flex-direction: column; flex-grow: 1; align-self: flex-start; }
         .header { 
             display: flex; 
             justify-content: space-between; 
@@ -87,6 +97,7 @@ here<!DOCTYPE html>
             top: 0;
             z-index: 10;
             border-bottom: 1px solid rgba(255,255,255,0.08);
+            width: 100%;
         }
         .header-title-box { display: flex; align-items: center; gap: 8px; overflow: hidden; }
         .header h1 { font-size: 15px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -98,7 +109,7 @@ here<!DOCTYPE html>
         .logout-btn { background: #ff453a; }
 
         /* شبكة المعرض (Gallery Grid) بستايل أستوديو الصور الحديث */
-        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding-bottom: 20px; }
+        .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding-bottom: 20px; width: 100%; }
         
         /* بطاقة الفيديو */
         .card { 
@@ -213,7 +224,6 @@ here<!DOCTYPE html>
     </div>
 
     <script>
-        // كلمة سر الـ VIP المحدثة
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
         // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
@@ -428,15 +438,29 @@ here<!DOCTYPE html>
             }
         }
 
+        // تحسين الذاكرة المؤقتة لعدم استهلاك باقة الإنترنت بعد التحميل الأول
         async function openZipFile(name, downloadUrl) {
             const grid = document.getElementById('items-grid');
             const pathTitle = document.getElementById('path-title');
-            grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل وفك الملف المضغوط...</p>";
+            grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري فتح الملف المضغوط...</p>";
             pathTitle.textContent = `📦 / ${name}`;
 
             try {
-                const response = await fetch(downloadUrl);
-                const blob = await response.blob();
+                let blob;
+                const cacheName = 'zip-offline-cache-v1';
+                const cache = await caches.open(cacheName);
+                let cachedResponse = await cache.match(downloadUrl);
+
+                if (cachedResponse) {
+                    blob = await cachedResponse.blob();
+                } else {
+                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف لأول مرة...</p>";
+                    const response = await fetch(downloadUrl);
+                    if (!response.ok) throw new Error("Network error");
+                    await cache.put(downloadUrl, response.clone());
+                    blob = await response.blob();
+                }
+
                 const zip = new JSZip();
                 currentZipData = await zip.loadAsync(blob);
                 currentZipName = name;
@@ -474,7 +498,6 @@ here<!DOCTYPE html>
                 }
             });
 
-            // عرض المجلدات الفرعية
             foldersSet.forEach(folderName => {
                 let card = document.createElement('div');
                 card.className = "folder-card";
@@ -492,7 +515,6 @@ here<!DOCTYPE html>
                 grid.appendChild(card);
             });
 
-            // عرض الفيديوهات والصور بستايل أستوديو الهاتف الحديث
             for (let fileName in filesMap) {
                 let fullZipPath = filesMap[fileName];
                 let ext = fileName.split('.').pop().toLowerCase();
