@@ -203,7 +203,7 @@
                 </div>
                 <div class="header-btns">
                     <button id="install-btn" class="action-btn install-app-btn hidden" onclick="installPWA()">تثبيت 📱</button>
-                    <button id="back-nav-btn" class="action-btn hidden" onclick="goBackHierarchy()">رجوع</button>
+                    <button id="back-nav-btn" class="action-btn hidden" onclick="goBackHierarchy()">رجوع ⬅</button>
                     <button class="action-btn logout-btn" onclick="logout()">خروج</button>
                 </div>
             </div>
@@ -224,10 +224,8 @@
     </div>
 
     <script>
-        // كلمة سر الـ VIP (تُطلب فقط للملفات أو المجلدات التي يحتوي اسمها على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
-        // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
         const manifestData = {
             "name": "المعرض الذكي للفيديوهات",
             "short_name": "المعرض",
@@ -348,22 +346,28 @@
             location.reload();
         }
 
+        // إبقاء زر الرجوع ظاهراً دائماً طالما أن المستخدم دخل إلى أي مجلد أو ملف مضغوط
         function updateBackButtonVisibility() {
             let backBtn = document.getElementById('back-nav-btn');
-            if (currentPath !== "" || (currentZipData !== null && currentInternalPath !== "")) {
+            if (currentPath !== "" || currentZipData !== null) {
                 backBtn.classList.remove('hidden');
             } else {
                 backBtn.classList.add('hidden');
             }
         }
 
+        // تحكم دقيق في العودة خطوة بخطوة للوراء
         function goBackHierarchy() {
             if (currentZipData !== null) {
                 if (currentInternalPath === "") {
+                    // إذا كنا في جذر الـ ZIP، العودة للقائمة الرئيسية مباشرة
                     currentZipData = null;
                     loadFolderContent(currentPath);
                 } else {
-                    let parentPath = currentInternalPath.substring(0, currentInternalPath.lastIndexOf('/', currentInternalPath.length - 2) + 1);
+                    // العودة للمجلد الأب داخل الـ ZIP
+                    let parts = currentInternalPath.split('/').filter(Boolean);
+                    parts.pop();
+                    let parentPath = parts.length > 0 ? parts.join('/') + '/' : "";
                     renderZipFolder(parentPath);
                 }
             } else {
@@ -372,7 +376,6 @@
             }
         }
 
-        // جلب الملفات والمجلدات من المستودع مع تجاوز الذاكرة المؤقتة لضمان عرض الملفات الجديدة دائماً
         async function loadFolderContent(path) {
             currentPath = path;
             currentZipData = null;
@@ -384,7 +387,6 @@
             pathTitle.textContent = path === "" ? "📁 الملفات الرئيسية" : `📁 / ${path}`;
 
             try {
-                // استخدام بصمة زمنية لتجاوز كاش جيت هاب عند جلب الملفات المحدثة
                 const apiUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?t=` + Date.now();
                 const res = await fetch(apiUrl);
                 const items = await res.json();
@@ -393,7 +395,7 @@
 
                 if (!Array.isArray(items) || items.length === 0) {
                     if (path === "") {
-                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ. ارفع ملفاتك المضغوطة هنا!</p>";
+                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ.</p>";
                     }
                     return;
                 }
@@ -430,7 +432,6 @@
                                     return;
                                 }
                             }
-                            // نمرر رابط التحميل وبصمة الملف (sha) لضمان تحديث الملف فوراً إذا تم استبداله
                             openZipFile(item.name, item.download_url, item.sha);
                         };
                         grid.appendChild(card);
@@ -442,7 +443,6 @@
             }
         }
 
-        // فتح ملف الـ ZIP مع نظام كاش ذكي يعتمد على كود الملف (sha) ليتحدث تلقائياً عند تغييره
         async function openZipFile(name, downloadUrl, fileSha) {
             const grid = document.getElementById('items-grid');
             const pathTitle = document.getElementById('path-title');
@@ -451,10 +451,8 @@
 
             try {
                 let blob;
-                const cacheName = 'zip-smart-cache-v1';
+                const cacheName = 'zip-smart-cache-v2';
                 const cache = await caches.open(cacheName);
-                
-                // استخدام رابط مميز يضم كود الملف لتحديثه تلقائياً عند تغيير الملف على جيت هاب
                 const uniqueCacheUrl = `${downloadUrl}?sha=${fileSha}`;
                 let cachedResponse = await cache.match(uniqueCacheUrl);
 
