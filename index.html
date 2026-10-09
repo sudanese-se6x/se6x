@@ -224,7 +224,12 @@
     </div>
 
     <script>
+        // كلمة سر الـ VIP (فقط للملفات/المجلدات التي تحتوي على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
+
+        // الطريقة الثانية: إعدادات الملف الضخم من GitHub Releases (اتركه فارغاً لو لم تستخدمه بعد)
+        const LARGE_ZIP_NAME = "VIP_Movies_Large.zip"; 
+        const LARGE_ZIP_URL = ""; // الصق رابط التحميل المباشر هنا عند توفره
 
         // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
         const manifestData = {
@@ -371,6 +376,7 @@
             }
         }
 
+        // دمج الطريقتين: جلب الملفات من المستودع العادي + إضافة الملف الضخم إن وجد رابطه
         async function loadFolderContent(path) {
             currentPath = path;
             currentZipData = null;
@@ -388,9 +394,27 @@
 
                 grid.innerHTML = "";
 
+                // إذا كنا في الصفحة الرئيسية، نضيف بطاقة الملف الضخم (الطريقة الثانية) إن وُجد رابطه
+                if (path === "" && LARGE_ZIP_URL && LARGE_ZIP_URL.trim() !== "") {
+                    let largeCard = document.createElement('div');
+                    largeCard.className = "folder-card";
+                    largeCard.innerHTML = `<div class="folder-icon">📦</div><div class="folder-title">${LARGE_ZIP_NAME}</div>`;
+                    largeCard.onclick = () => {
+                        if (LARGE_ZIP_NAME.toLowerCase().includes("vip")) {
+                            let pass = prompt("🔒 هذا الملف مخصص لمشتركي VIP فقط. أدخل كلمة السر:");
+                            if (pass !== VIP_SECRET_PASSWORD) {
+                                alert("❌ كلمة السر غير صحيحة!");
+                                return;
+                            }
+                        }
+                        openZipFile(LARGE_ZIP_NAME, LARGE_ZIP_URL);
+                    };
+                    grid.appendChild(largeCard);
+                }
+
                 if (!Array.isArray(items) || items.length === 0) {
-                    if (path === "") {
-                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ. ارفع ملفاتك المضغوطة (ZIP) هنا!</p>";
+                    if (path === "" && (!LARGE_ZIP_URL || LARGE_ZIP_URL.trim() === "")) {
+                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ.</p>";
                     }
                     return;
                 }
@@ -405,7 +429,7 @@
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${item.name}</div>`;
                         card.onclick = () => {
-                            if (item.name === "2" || item.name.toLowerCase().includes("vip")) {
+                            if (item.name.toLowerCase().includes("vip")) {
                                 let pass = prompt("🔒 هذا المجلد مخصص لمشتركي VIP فقط. أدخل كلمة السر:");
                                 if (pass !== VIP_SECRET_PASSWORD) {
                                     alert("❌ كلمة السر غير صحيحة!");
@@ -420,7 +444,7 @@
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📦</div><div class="folder-title">${item.name}</div>`;
                         card.onclick = () => {
-                            if (item.name.includes("2") || item.name.toLowerCase().includes("vip")) {
+                            if (item.name.toLowerCase().includes("vip")) {
                                 let pass = prompt("🔒 هذا الملف مضغوط ومخصص لمشتركي VIP فقط. أدخل كلمة السر:");
                                 if (pass !== VIP_SECRET_PASSWORD) {
                                     alert("❌ كلمة السر غير صحيحة!");
@@ -438,7 +462,6 @@
             }
         }
 
-        // تحسين الذاكرة المؤقتة لعدم استهلاك باقة الإنترنت بعد التحميل الأول
         async function openZipFile(name, downloadUrl) {
             const grid = document.getElementById('items-grid');
             const pathTitle = document.getElementById('path-title');
@@ -447,14 +470,14 @@
 
             try {
                 let blob;
-                const cacheName = 'zip-offline-cache-v1';
+                const cacheName = 'zip-offline-cache-v3';
                 const cache = await caches.open(cacheName);
                 let cachedResponse = await cache.match(downloadUrl);
 
                 if (cachedResponse) {
                     blob = await cachedResponse.blob();
                 } else {
-                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف لأول مرة...</p>";
+                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف (لأول مرة فقط)...</p>";
                     const response = await fetch(downloadUrl);
                     if (!response.ok) throw new Error("Network error");
                     await cache.put(downloadUrl, response.clone());
@@ -503,7 +526,7 @@
                 card.className = "folder-card";
                 card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${folderName}</div>`;
                 card.onclick = () => {
-                    if (folderName === "2" || folderName.toLowerCase().includes("vip")) {
+                    if (folderName.toLowerCase().includes("vip")) {
                         let pass = prompt("🔒 هذا المجلد الفرعي مخصص لـ VIP فقط. أدخل كلمة السر:");
                         if (pass !== VIP_SECRET_PASSWORD) {
                             alert("❌ كلمة السر غير صحيحة!");
