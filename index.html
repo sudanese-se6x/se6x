@@ -224,7 +224,6 @@
     </div>
 
     <script>
-        // كلمة سر الـ VIP (تُطلب فقط للملفات أو المجلدات التي يحتوي اسمها على كلمة VIP)
         const VIP_SECRET_PASSWORD = "SUDANESE_SEX_VIP_26"; 
 
         // حقن إعدادات التثبيت (PWA Manifest) تلقائياً
@@ -391,7 +390,7 @@
 
                 if (!Array.isArray(items) || items.length === 0) {
                     if (path === "") {
-                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ.</p>";
+                        grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 30px;'>المستودع فارغ. ارفع ملفاتك المضغوطة (ZIP) هنا!</p>";
                     }
                     return;
                 }
@@ -406,7 +405,7 @@
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${item.name}</div>`;
                         card.onclick = () => {
-                            if (item.name.toLowerCase().includes("vip")) {
+                            if (item.name === "2" || item.name.toLowerCase().includes("vip")) {
                                 let pass = prompt("🔒 هذا المجلد مخصص لمشتركي VIP فقط. أدخل كلمة السر:");
                                 if (pass !== VIP_SECRET_PASSWORD) {
                                     alert("❌ كلمة السر غير صحيحة!");
@@ -421,7 +420,7 @@
                         card.className = "folder-card";
                         card.innerHTML = `<div class="folder-icon">📦</div><div class="folder-title">${item.name}</div>`;
                         card.onclick = () => {
-                            if (item.name.toLowerCase().includes("vip")) {
+                            if (item.name.includes("2") || item.name.toLowerCase().includes("vip")) {
                                 let pass = prompt("🔒 هذا الملف مضغوط ومخصص لمشتركي VIP فقط. أدخل كلمة السر:");
                                 if (pass !== VIP_SECRET_PASSWORD) {
                                     alert("❌ كلمة السر غير صحيحة!");
@@ -454,7 +453,7 @@
                 if (cachedResponse) {
                     blob = await cachedResponse.blob();
                 } else {
-                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف (لأول مرة فقط)...</p>";
+                    grid.innerHTML = "<p style='color:#8e8e93; grid-column: 1/-1; text-align:center; padding: 40px;'>⏳ جاري تحميل الملف لأول مرة...</p>";
                     const response = await fetch(downloadUrl);
                     if (!response.ok) throw new Error("Network error");
                     await cache.put(downloadUrl, response.clone());
@@ -503,7 +502,7 @@
                 card.className = "folder-card";
                 card.innerHTML = `<div class="folder-icon">📁</div><div class="folder-title">${folderName}</div>`;
                 card.onclick = () => {
-                    if (folderName.toLowerCase().includes("vip")) {
+                    if (folderName === "2" || folderName.toLowerCase().includes("vip")) {
                         let pass = prompt("🔒 هذا المجلد الفرعي مخصص لـ VIP فقط. أدخل كلمة السر:");
                         if (pass !== VIP_SECRET_PASSWORD) {
                             alert("❌ كلمة السر غير صحيحة!");
